@@ -40,16 +40,12 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
 
   grafana:
-    container_name: grafana
     image: grafana/grafana
+    container_name: grafana
     ports:
-      - 3000:3000
-    volumes:
-      - ./monitoring/grafana/:/var/lib/grafana
-      - ./monitoring/grafana/datasource.yml:/etc/grafana/provisioning/datasource.yml
+      - "3000:3000"
     depends_on:
       - prometheus
-      - backend
 
   node-exporter:
     container_name: node-exporter
@@ -84,9 +80,14 @@ services:
     image: gcr.io/cadvisor/cadvisor:v0.46.0
     ports:
       - 8080:8080
+    devices:
+      - "/dev/kmsg:/dev/kmsg"
+    privileged: true
     volumes:
+      - /:/rootfs:ro
       - /var/run:/var/run:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
-      - /var/run/docker.sock:/var/run/docker.sock:rw
-    restart: always
+      - /dev/disk/:/dev/disk:ro
+    restart: unless-stopped
